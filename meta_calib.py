@@ -19,8 +19,8 @@ import networks
 from Losses.loss import calculate_loss, ECELoss
 from datasets import ColoredMNIST, RotatedMNIST, MultipleEnvironmentMNIST
 
-# import wandb
-# wandb.init(project="meta-calibration")
+import wandb
+wandb.init(project="meta-calibration")
 
 
 
@@ -169,7 +169,7 @@ class MetaCalibModule(pl.LightningModule):
         return meta_loss.detach().cpu().item(), loss.detach()
 
 
-    def validation_step(self, batch, batch_idx, temp):
+    def validation_step(self, batch, batch_idx, *domain_idx):
         data, labels = batch
         logits = self(data)
         loss = calculate_loss(logits, labels, 'cross_entropy')
@@ -180,16 +180,32 @@ class MetaCalibModule(pl.LightningModule):
         correct = pred == labels
         accuracy = correct.sum() / len(correct)
 
-        self.log_dict({f'val_loss({self.hparams.model_type})': loss,
-                       f'val_ece({self.hparams.model_type})': ece,
-                       f'val_acc({self.hparams.model_type})': accuracy})
+        if len(domain_idx) > 0:
+            domain_idx = domain_idx[0]
+            self.log_dict({f'val_loss({self.hparams.model_type}_domain{domain_idx})': loss,
+                           f'val_ece({self.hparams.model_type}_domain{domain_idx})': ece,
+                           f'val_acc({self.hparams.model_type}_domain{domain_idx})': accuracy})
+            return {'loss': loss, 'ece': ece, 'accuracy': accuracy}
+        else:
+            self.log_dict({f'val_loss({self.hparams.model_type})': loss,
+                           f'val_ece({self.hparams.model_type})': ece,
+                           f'val_acc({self.hparams.model_type})': accuracy})
+            return {'loss': loss, 'ece': ece, 'accuracy': accuracy}
 
-        return loss
+    def validation_epoch_end(self, outputs):
+        # if num_domains > 1, outputs is list (num domains) of lists (per batch) of dictionaries outputted by val step
+        # if num_domains = 1, outputs is list (per batch) of dictionaries
+        if self.hparams.num_domains == 1:
+            outputs = [outputs]
+        for domain_idx, domain_list in enumerate(outputs):
+            for metric in domain_list[0].keys():
+                values = [d[metric] for d in domain_list]
+                self.log(f"avg_{metric}_domain{domain_idx}", sum(values) / len(values))
 
 
 class DomainMNIST_DataModule(pl.LightningDataModule):
-    train_size = 0.8
-    meta_val_size = 0.2     # out of the train samples
+    train_size = 0.2
+    meta_val_size = 0.05     # out of the train samples
     val_size = 0.1
     def __init__(self, data_dir: str = '', batch_size: int = 32, mnist_class=None, num_workers=5):
         super().__init__()
@@ -235,6 +251,7 @@ class DomainMNIST_DataModule(pl.LightningDataModule):
             # ax2.imshow(example_image)
             # ax2.set_title(f"second. label: {example_label.item()}")
             # plt.show()
+        print(f"\ntrain set size: {len(self.train_set[0])}\n")
 
     def train_dataloader(self):
         return {'train': [DataLoader(dataset, batch_size=self.batch_size, shuffle=True,
@@ -242,7 +259,7 @@ class DomainMNIST_DataModule(pl.LightningDataModule):
                 'meta': [DataLoader(dataset, batch_size=self.batch_size, shuffle=True,
                                     num_workers=self.num_workers) for dataset in self.meta_set]}
     def val_dataloader(self):
-        return [DataLoader(dataset, batch_size=self.batch_size, shuffle=True,
+        return [DataLoader(dataset, batch_size=self.batch_size, shuffle=False,
                            num_workers=self.num_workers) for dataset in self.val_set]
     # def test_dataloader(self):
     #     return [DataLoader(dataset, batch_size=self.batch_size, shuffle=True) for dataset in self.test_set]
@@ -271,6 +288,7 @@ def main():
     else:
         raise ValueError
 
+    wandb_logger = WandbLogger() if not debug_mode else None
     for model_type in ['no_meta', 'md_meta', 'one_vec_meta']:
         model = MetaCalibModule(model_type, input_shape, num_classes=num_classes, num_domains=num_domains,
                                 lr=0.2, nonlinear_classifier=False, weight_decay=5e-4)
@@ -278,7 +296,7 @@ def main():
         if debug_mode:
             trainer = pl.Trainer(max_epochs=1)
         else:
-            wandb_logger = WandbLogger()
+            # wandb_logger = WandbLogger()
             trainer = pl.Trainer(max_epochs=10, logger=wandb_logger, gpus=1)
         trainer.fit(model, datamodule=datamodule)
 

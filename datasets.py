@@ -237,14 +237,14 @@ class ColoredMNIST(MultipleEnvironmentMNIST):
 class RotatedMNIST(MultipleEnvironmentMNIST):
     # ENVIRONMENTS = ['0', '15', '30', '45', '60', '75']
     # ENVIRONMENTS = ['15', '60']
-    ENVIRONMENTS = ['0']
+    ENVIRONMENTS = ['15']
 
     def __init__(self, root, test_envs, hparams):
         # super(RotatedMNIST, self).__init__(root, [0, 15, 30, 45, 60, 75],
         #                                    self.rotate_dataset, (1, 28, 28,), 10)
         # super(RotatedMNIST, self).__init__(root, [15, 60],
         #                                    self.rotate_dataset, (1, 28, 28,), 10)
-        super(RotatedMNIST, self).__init__(root, [0],
+        super(RotatedMNIST, self).__init__(root, [15],
                                            self.rotate_dataset, (1, 28, 28,), 10)
 
     def rotate_dataset(self, images, labels, angle):
