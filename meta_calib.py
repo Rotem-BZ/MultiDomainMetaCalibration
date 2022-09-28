@@ -20,7 +20,7 @@ from Losses.loss import calculate_loss, ECELoss
 from datasets import ColoredMNIST, RotatedMNIST, MultipleEnvironmentMNIST
 
 import wandb
-wandb.init(project="meta-calibration")
+# wandb.init(project="meta-calibration")
 
 
 
@@ -113,10 +113,10 @@ class MetaCalibModule(pl.LightningModule):
         correct = pred == train_labels
         accuracy = correct.sum() / len(correct)
 
-        self.log_dict({f'train_loss({self.hparams.model_type})': loss,
-                       f'train_ece({self.hparams.model_type})': ece,
-                       f'train_acc({self.hparams.model_type})': accuracy,
-                       f'meta_loss({self.hparams.model_type})': meta_loss})
+        self.log_dict({f'train_loss': loss,
+                       f'train_ece': ece,
+                       f'train_acc': accuracy,
+                       f'meta_loss': meta_loss})
 
         return loss
 
@@ -204,8 +204,8 @@ class MetaCalibModule(pl.LightningModule):
 
 
 class DomainMNIST_DataModule(pl.LightningDataModule):
-    train_size = 0.2
-    meta_val_size = 0.05     # out of the train samples
+    train_size = 0.6
+    meta_val_size = 0.1     # out of the train samples
     val_size = 0.1
     def __init__(self, data_dir: str = '', batch_size: int = 32, mnist_class=None, num_workers=5):
         super().__init__()
@@ -266,19 +266,18 @@ class DomainMNIST_DataModule(pl.LightningDataModule):
 
 
 def main():
-    mnist_class_name = 'rotated'
-    # command = """
-    # srun ../miniconda3/envs/NLP_rotem_env/bin/python3.8 rotem_main.py
-    # """
-
-    # debug mode operates on CPU without wandb
+    # debug mode operates on CPU without wandb and progress bar
     debug_mode = False
+    model_type = ['no_meta', 'md_meta', 'one_vec_meta'][2]
+    mnist_class_name = 'rotated'
+    # mnist_class_name = 'colored'
+    run_name = f"{model_type}_{mnist_class_name}"
 
     if mnist_class_name == 'rotated':
         input_shape = (1, 28, 28)
         num_classes = 10
-        # num_domains = 2
-        num_domains = 1
+        num_domains = 6
+        # num_domains = 1
         mnist_class = RotatedMNIST
     elif mnist_class_name == 'colored':
         input_shape = (2, 28, 28)
@@ -288,17 +287,20 @@ def main():
     else:
         raise ValueError
 
-    wandb_logger = WandbLogger() if not debug_mode else None
-    for model_type in ['no_meta', 'md_meta', 'one_vec_meta']:
-        model = MetaCalibModule(model_type, input_shape, num_classes=num_classes, num_domains=num_domains,
-                                lr=0.2, nonlinear_classifier=False, weight_decay=5e-4)
-        datamodule = DomainMNIST_DataModule(batch_size=32, num_workers=4, mnist_class=mnist_class)
-        if debug_mode:
-            trainer = pl.Trainer(max_epochs=1)
-        else:
-            # wandb_logger = WandbLogger()
-            trainer = pl.Trainer(max_epochs=10, logger=wandb_logger, gpus=1)
-        trainer.fit(model, datamodule=datamodule)
+    if not debug_mode:
+        wandb.init(project="meta-calibration", name=run_name)
+        wandb_logger = WandbLogger(name=run_name)
+    else:
+        wandb_logger = None
+    model = MetaCalibModule(model_type, input_shape, num_classes=num_classes, num_domains=num_domains,
+                            lr=1e-3, nonlinear_classifier=False, weight_decay=5e-5)
+    datamodule = DomainMNIST_DataModule(batch_size=32, num_workers=4, mnist_class=mnist_class)
+    if debug_mode:
+        trainer = pl.Trainer(max_epochs=1, enable_progress_bar=False)
+    else:
+        # wandb_logger = WandbLogger()
+        trainer = pl.Trainer(max_epochs=200, logger=wandb_logger, gpus=1)
+    trainer.fit(model, datamodule=datamodule)
 
 
 if __name__ == '__main__':

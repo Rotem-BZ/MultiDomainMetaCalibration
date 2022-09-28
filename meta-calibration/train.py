@@ -197,7 +197,7 @@ def parseArgs():
                         help='how large meta val set should be - relative to val')
     parser.add_argument("--multi_domain", action="store_true", dest="multi_domain",
                         help="whether to use multidomain training")
-    parser.set_defaults(multi_domain=False)
+    parser.set_defaults(multi_domain=True)
     parser.add_argument("--num_bins", type=int, default=15,
                         dest="num_bins", help="Number of bins for DECE calculation")
     parser.add_argument("--t_a", type=float, default=100.0,
