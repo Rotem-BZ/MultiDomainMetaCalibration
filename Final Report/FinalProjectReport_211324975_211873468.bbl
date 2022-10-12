@@ -1,0 +1,107 @@
+\begin{thebibliography}{16}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{Arjovsky et~al.(2019)Arjovsky, Bottou, Gulrajani, and
+  Lopez-Paz}]{arjovsky2019invariant}
+Martin Arjovsky, L{\'e}on Bottou, Ishaan Gulrajani, and David Lopez-Paz. 2019.
+\newblock Invariant risk minimization.
+\newblock \emph{arXiv preprint arXiv:1907.02893}.
+
+\bibitem[{Biewald(2020)}]{wandb}
+Lukas Biewald. 2020.
+\newblock \href {https://www.wandb.com/} {Experiment tracking with weights and
+  biases}.
+\newblock Software available from wandb.com.
+
+\bibitem[{Bohdal et~al.(2021)Bohdal, Yang, and Hospedales}]{bohdal2021meta}
+Ondrej Bohdal, Yongxin Yang, and Timothy Hospedales. 2021.
+\newblock Meta-calibration: Meta-learning of model calibration using
+  differentiable expected calibration error.
+\newblock \emph{arXiv preprint arXiv:2106.09613}.
+
+\bibitem[{Brier et~al.(1950)}]{brier1950verification}
+Glenn~W Brier et~al. 1950.
+\newblock Verification of forecasts expressed in terms of probability.
+\newblock \emph{Monthly weather review}, 78(1):1--3.
+
+\bibitem[{Finn et~al.(2017)Finn, Abbeel, and Levine}]{finn2017model}
+Chelsea Finn, Pieter Abbeel, and Sergey Levine. 2017.
+\newblock Model-agnostic meta-learning for fast adaptation of deep networks.
+\newblock In \emph{International conference on machine learning}, pages
+  1126--1135. PMLR.
+
+\bibitem[{Ghifary et~al.(2015)Ghifary, Kleijn, Zhang, and
+  Balduzzi}]{ghifary2015domain}
+Muhammad Ghifary, W~Bastiaan Kleijn, Mengjie Zhang, and David Balduzzi. 2015.
+\newblock Domain generalization for object recognition with multi-task
+  autoencoders.
+\newblock In \emph{Proceedings of the IEEE international conference on computer
+  vision}, pages 2551--2559.
+
+\bibitem[{Gulrajani and Lopez-Paz(2020)}]{gulrajani2020search}
+Ishaan Gulrajani and David Lopez-Paz. 2020.
+\newblock In search of lost domain generalization.
+\newblock \emph{arXiv preprint arXiv:2007.01434}.
+
+\bibitem[{Guo et~al.(2017)Guo, Pleiss, Sun, and
+  Weinberger}]{guo2017calibration}
+Chuan Guo, Geoff Pleiss, Yu~Sun, and Kilian~Q Weinberger. 2017.
+\newblock On calibration of modern neural networks.
+\newblock In \emph{International conference on machine learning}, pages
+  1321--1330. PMLR.
+
+\bibitem[{Hendrycks and Dietterich(2019)}]{hendrycks2019benchmarking}
+Dan Hendrycks and Thomas Dietterich. 2019.
+\newblock Benchmarking neural network robustness to common corruptions and
+  perturbations.
+\newblock \emph{arXiv preprint arXiv:1903.12261}.
+
+\bibitem[{Hendrycks and Gimpel(2016)}]{hendrycks2016baseline}
+Dan Hendrycks and Kevin Gimpel. 2016.
+\newblock A baseline for detecting misclassified and out-of-distribution
+  examples in neural networks.
+\newblock \emph{arXiv preprint arXiv:1610.02136}.
+
+\bibitem[{Kumar et~al.(2018)Kumar, Sarawagi, and Jain}]{kumar2018trainable}
+Aviral Kumar, Sunita Sarawagi, and Ujjwal Jain. 2018.
+\newblock Trainable calibration measures for neural networks from kernel mean
+  embeddings.
+\newblock In \emph{International Conference on Machine Learning}, pages
+  2805--2814. PMLR.
+
+\bibitem[{Li et~al.(2019)Li, Yang, Zhou, and Hospedales}]{li2019feature}
+Yiying Li, Yongxin Yang, Wei Zhou, and Timothy Hospedales. 2019.
+\newblock Feature-critic networks for heterogeneous domain generalization.
+\newblock In \emph{International Conference on Machine Learning}, pages
+  3915--3924. PMLR.
+
+\bibitem[{Mukhoti et~al.(2020)Mukhoti, Kulharia, Sanyal, Golodetz, Torr, and
+  Dokania}]{mukhoti2020calibrating}
+Jishnu Mukhoti, Viveka Kulharia, Amartya Sanyal, Stuart Golodetz, Philip Torr,
+  and Puneet Dokania. 2020.
+\newblock Calibrating deep neural networks using focal loss.
+\newblock \emph{Advances in Neural Information Processing Systems},
+  33:15288--15299.
+
+\bibitem[{M{\"u}ller et~al.(2019)M{\"u}ller, Kornblith, and
+  Hinton}]{muller2019does}
+Rafael M{\"u}ller, Simon Kornblith, and Geoffrey~E Hinton. 2019.
+\newblock When does label smoothing help?
+\newblock \emph{Advances in neural information processing systems}, 32.
+
+\bibitem[{Wald et~al.(2021)Wald, Feder, Greenfeld, and
+  Shalit}]{wald2021calibration}
+Yoav Wald, Amir Feder, Daniel Greenfeld, and Uri Shalit. 2021.
+\newblock On calibration and out-of-domain generalization.
+\newblock \emph{Advances in neural information processing systems},
+  34:2215--2227.
+
+\bibitem[{Zhang et~al.(2021)Zhang, Marklund, Dhawan, Gupta, Levine, and
+  Finn}]{zhang2021adaptive}
+Marvin Zhang, Henrik Marklund, Nikita Dhawan, Abhishek Gupta, Sergey Levine,
+  and Chelsea Finn. 2021.
+\newblock Adaptive risk minimization: Learning to adapt to domain shift.
+\newblock \emph{Advances in Neural Information Processing Systems},
+  34:23664--23678.
+
+\end{thebibliography}
