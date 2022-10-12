@@ -46,6 +46,8 @@ class MetaCalibModule(pl.LightningModule):
             raise ValueError(f"illegal model_type {model_type}")
 
         self.ece_criterion = ECELoss()
+        self.dece_improve_count = 0
+        self.total_train_steps = 0
 
     def configure_optimizers(self):
         model_optimizer = optim.Adam(
@@ -55,7 +57,8 @@ class MetaCalibModule(pl.LightningModule):
         )
         if self.hparams.model_type == 'no_meta':
             return model_optimizer
-        meta_optimizer = optim.Adam(self.smooth_params)
+        # meta_optimizer = optim.Adam(self.smooth_params, lr=1e-6)
+        meta_optimizer = optim.SGD(self.smooth_params, lr=1e-8)
         return model_optimizer, meta_optimizer
 
     def forward(self, data):
@@ -149,9 +152,12 @@ class MetaCalibModule(pl.LightningModule):
 
         meta_loss = calculate_loss(logits_val, labels_val, 'dece',
                                    num_bins=self.hparams.num_bins, t_a=self.hparams.t_a, t_b=self.hparams.t_b)
+        # print(f"first meta params before update:\n{self.smooth_params[0].tolist()}")
         meta_optimizer.zero_grad()
         self.manual_backward(meta_loss, retain_graph=True)
         meta_optimizer.step()
+        # print(f"DECE before update:\t{meta_loss.detach().cpu().item()}")
+
 
         # reset the fast weights to None
         for weight in self.network[1].parameters():
@@ -163,7 +169,7 @@ class MetaCalibModule(pl.LightningModule):
 
         model_optimizer.zero_grad()
         self.manual_backward(loss)
-        torch.nn.utils.clip_grad_norm_(self.network.parameters(), 2)
+        # torch.nn.utils.clip_grad_norm_(self.network.parameters(), 2)
         model_optimizer.step()
 
         return meta_loss.detach().cpu().item(), loss.detach()
@@ -267,12 +273,14 @@ class DomainMNIST_DataModule(pl.LightningDataModule):
 
 def main():
     # debug mode operates on CPU without wandb and progress bar
-    debug_mode = False
+    gpu_and_pbar = True
+    use_wandb = True
+    epochs = 100
     model_type = ['no_meta', 'md_meta', 'one_vec_meta'][2]
-    mnist_class_name = 'rotated'
+    mnist_class_name = 'colored'
     # mnist_class_name = 'colored'
-    run_name = f"{model_type}_{mnist_class_name}"
 
+    run_name = f"{model_type}_{mnist_class_name}"
     if mnist_class_name == 'rotated':
         input_shape = (1, 28, 28)
         num_classes = 10
@@ -287,7 +295,7 @@ def main():
     else:
         raise ValueError
 
-    if not debug_mode:
+    if use_wandb:
         wandb.init(project="meta-calibration", name=run_name)
         wandb_logger = WandbLogger(name=run_name)
     else:
@@ -295,11 +303,10 @@ def main():
     model = MetaCalibModule(model_type, input_shape, num_classes=num_classes, num_domains=num_domains,
                             lr=1e-3, nonlinear_classifier=False, weight_decay=5e-5)
     datamodule = DomainMNIST_DataModule(batch_size=32, num_workers=4, mnist_class=mnist_class)
-    if debug_mode:
-        trainer = pl.Trainer(max_epochs=1, enable_progress_bar=False)
+    if gpu_and_pbar:
+        trainer = pl.Trainer(max_epochs=epochs, logger=wandb_logger, gpus=1)
     else:
-        # wandb_logger = WandbLogger()
-        trainer = pl.Trainer(max_epochs=200, logger=wandb_logger, gpus=1)
+        trainer = pl.Trainer(max_epochs=1, enable_progress_bar=False)
     trainer.fit(model, datamodule=datamodule)
 
 
